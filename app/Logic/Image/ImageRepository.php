@@ -2,7 +2,7 @@
 
 namespace App\Logic\Image;
 
-use App\Models\Image;
+use App\Models\Img;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Config;
@@ -14,7 +14,7 @@ class ImageRepository
     public function upload( $form_data )
     {
 
-        $validator = Validator::make($form_data, Image::$rules, Image::$messages);
+        $validator = Validator::make($form_data, Img::$rules, Img::$messages);
 
         if ($validator->fails()) {
 
@@ -58,10 +58,10 @@ class ImageRepository
 	   // Flash::success('Product Image Uploaded Successfully.');
 
 
-        $sessionImage = new Image;
-        $sessionImage->filename      = $allowed_filename;
-        $sessionImage->original_name = $originalName;
-        $sessionImage->save();
+        $sessionImg = new Img;
+        $sessionImg->filename      = $allowed_filename;
+        $sessionImg->original_name = $originalName;
+        $sessionImg->save();
 
         return Response::json([
             'error' => false,
@@ -197,10 +197,10 @@ class ImageRepository
 
 
 
-	    $sessionImage = Image::where('original_name', 'like', $originalFilename)->first();
+	    $sessionImg = Img::where('original_name', 'like', $originalFilename)->first();
 
 
-        if(empty($sessionImage))
+        if(empty($sessionImg))
         {
             return Response::json([
                 'error' => true,
@@ -209,14 +209,14 @@ class ImageRepository
 
         }
 
-        $full_path1 = $full_size_dir . $sessionImage->filename . '.jpg';
-        $full_path2 = $icon_size_dir . $sessionImage->filename . '.jpg';
-	    $full_path3 = $post_size_dir . $sessionImage->filename . '.jpg';
-	    $full_path4 = $grid_size_dir . $sessionImage->filename . '.jpg';
-	    $full_path5 = $blog_header_size_dir . $sessionImage->filename . '.jpg';
-	    $full_path6 = $catalog_size_dir . $sessionImage->filename . '.jpg';
-	    $full_path7 = $product_thumb_dir . $sessionImage->filename . '.jpg';
-	    $full_path8 = $thumb_size_dir . $sessionImage->filename . '.jpg';
+        $full_path1 = $full_size_dir . $sessionImg->filename . '.jpg';
+        $full_path2 = $icon_size_dir . $sessionImg->filename . '.jpg';
+	    $full_path3 = $post_size_dir . $sessionImg->filename . '.jpg';
+	    $full_path4 = $grid_size_dir . $sessionImg->filename . '.jpg';
+	    $full_path5 = $blog_header_size_dir . $sessionImg->filename . '.jpg';
+	    $full_path6 = $catalog_size_dir . $sessionImg->filename . '.jpg';
+	    $full_path7 = $product_thumb_dir . $sessionImg->filename . '.jpg';
+	    $full_path8 = $thumb_size_dir . $sessionImg->filename . '.jpg';
 
 	    if ( File::exists( $full_path1 ) ) {File::delete( $full_path1 ); }
 	    if ( File::exists( $full_path2 ) ) {File::delete( $full_path2 ); }
@@ -227,9 +227,9 @@ class ImageRepository
 	    if ( File::exists( $full_path7 ) ) {File::delete( $full_path7 ); }
 	    if ( File::exists( $full_path8 ) ) {File::delete( $full_path8 ); }
 
-        if( !empty($sessionImage))
+        if( !empty($sessionImg))
         {
-            $sessionImage->delete();
+            $sessionImg->delete();
         }
 
         return Response::json([
