@@ -112,5 +112,14 @@ class Product extends Model
         return $this->hasMany(SaleorderProduct::class, 'product_id');
     }
 
+    public function images()
+    {
+        return $this->hasMany(Image::class, 'product_id');
+    }
+    
+    public function productImages()
+    {
+        return $this->hasMany(Image::class, 'product_id');
+    }
 
 }

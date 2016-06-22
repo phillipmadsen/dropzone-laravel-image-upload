@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use \Venturecraft\Revisionable\RevisionableTrait;
 
 class ProductVariant extends Model
 {
-    use SoftDeletes, RevisionableTrait;
+    use SoftDeletes;
 
     protected $dates = ['deleted_at'];
     protected $guarded  = ['id'];
