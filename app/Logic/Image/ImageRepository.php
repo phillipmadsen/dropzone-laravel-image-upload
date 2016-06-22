@@ -2,13 +2,12 @@
 
 namespace App\Logic\Image;
 
+use App\Models\Image;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
-use App\Models\Image;
-
 
 class ImageRepository
 {
@@ -30,17 +29,23 @@ class ImageRepository
         $photo = $form_data['file'];
 
         $originalName = $photo->getClientOriginalName();
-        $extension = $photo->getClientOriginalExtension();
-        $originalNameWithoutExt = substr($originalName, 0, strlen($originalName) - strlen($extension) - 1);
+        $originalNameWithoutExt = substr($originalName, 0, - 4);
 
         $filename = $this->sanitize($originalNameWithoutExt);
-        $allowed_filename = $this->createUniqueFilename( $filename, $extension );
+        $allowed_filename = $this->createUniqueFilename( $filename );
 
-        $uploadSuccess1 = $this->original( $photo, $allowed_filename );
+        $filenameExt = $allowed_filename .'.jpg';
 
-        $uploadSuccess2 = $this->icon( $photo, $allowed_filename );
+        $uploadSuccess1 = $this->original( $photo, $filenameExt );
+        $uploadSuccess2 = $this->icon( $photo, $filenameExt );
+	    $uploadSuccess3 = $this->catalog( $photo, $filenameExt );
+	    $uploadSuccess4 = $this->grid( $photo, $filenameExt );
+	    $uploadSuccess5 = $this->blogheader( $photo, $filenameExt );
+	    $uploadSuccess6 = $this->productthumb( $photo, $filenameExt );
+	    $uploadSuccess7 = $this->thumb( $photo, $filenameExt );
+	    $uploadSuccess8 = $this->postimage( $photo, $filenameExt );
 
-        if( !$uploadSuccess1 || !$uploadSuccess2 ) {
+        if( !$uploadSuccess1 || !$uploadSuccess2 || !$uploadSuccess3 || !$uploadSuccess4 || !$uploadSuccess5 || !$uploadSuccess6 || !$uploadSuccess7 || !$uploadSuccess8 ) {
 
             return Response::json([
                 'error' => true,
@@ -49,6 +54,9 @@ class ImageRepository
             ], 500);
 
         }
+
+	   // Flash::success('Product Image Uploaded Successfully.');
+
 
         $sessionImage = new Image;
         $sessionImage->filename      = $allowed_filename;
@@ -62,19 +70,19 @@ class ImageRepository
 
     }
 
-    public function createUniqueFilename( $filename, $extension )
+    public function createUniqueFilename( $filename )
     {
         $full_size_dir = Config::get('images.full_size');
-        $full_image_path = $full_size_dir . $filename . '.' . $extension;
+        $full_image_path = $full_size_dir . $filename . '.jpg';
 
         if ( File::exists( $full_image_path ) )
         {
             // Generate token for image
             $imageToken = substr(sha1(mt_rand()), 0, 5);
-            return $filename . '-' . $imageToken . '.' . $extension;
+            return $filename . '-' . $imageToken;
         }
 
-        return $filename . '.' . $extension;
+        return $filename;
     }
 
     /**
@@ -83,7 +91,7 @@ class ImageRepository
     public function original( $photo, $filename )
     {
         $manager = new ImageManager();
-        $image = $manager->make( $photo )->save(Config::get('images.full_size') . $filename );
+        $image = $manager->make( $photo )->encode('jpg')->save(Config::get('images.full_size') . $filename );
 
         return $image;
     }
@@ -94,13 +102,82 @@ class ImageRepository
     public function icon( $photo, $filename )
     {
         $manager = new ImageManager();
-        $image = $manager->make( $photo )->resize(200, null, function ($constraint) {
-            $constraint->aspectRatio();
-            })
-            ->save( Config::get('images.icon_size')  . $filename );
+        $image = $manager->make( $photo )->encode('jpg')->resize(200, null, function($constraint){
+	        $constraint->aspectRatio();
+        })->save( Config::get('images.icon_size')  . $filename );
 
         return $image;
     }
+
+
+	public function catalog( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(440, 586, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.catalog_size') . $filename );
+
+		return $image;
+	}
+
+
+	//'width'  => 270, 'height' => 360
+
+	public function grid( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(intval(270), 360, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.grid_size')  . $filename );
+
+		return $image;
+	}
+
+	/**
+	 * Create blog_header From Original  860 x 400 pixels
+	 */
+	public function blogheader( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(860, null, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.blog_header_size')  . $filename );
+
+		return $image;
+	}
+              //  100 x 75 pixels
+	public function productthumb( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(100, null, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.product_thumb')  . $filename );
+
+		return $image;
+	}
+
+	public function thumb( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(64, null, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.thumb_size')  . $filename );
+
+		return $image;
+	}
+
+	/**
+	 * Create post_size From Original  2000 x 1326 pixels  860 x 570 pixels
+	 */
+	public function postimage( $photo, $filename )
+	{
+		$manager = new ImageManager();
+		$image = $manager->make( $photo )->encode('jpg')->resize(860, null, function($constraint){
+			$constraint->aspectRatio();
+		})->save( Config::get('images.post_size')  . $filename );
+
+		return $image;
+	}
 
     /**
      * Delete Image From Session folder, based on original filename
@@ -110,8 +187,17 @@ class ImageRepository
 
         $full_size_dir = Config::get('images.full_size');
         $icon_size_dir = Config::get('images.icon_size');
+	    $post_size_dir = Config::get('images.post_size');
+	    $blog_header_size_dir = Config::get('images.blog_header_size');
+	    $grid_size_dir = Config::get('images.grid_size');
+	    $catalog_size_dir = Config::get('images.catalog_size');
+	    $product_thumb_dir = Config::get('images.product_thumb');
+	    $thumb_size_dir = Config::get('images.thumb_size');
 
-        $sessionImage = Image::where('original_name', 'like', $originalFilename)->first();
+
+
+
+	    $sessionImage = Image::where('original_name', 'like', $originalFilename)->first();
 
 
         if(empty($sessionImage))
@@ -123,18 +209,23 @@ class ImageRepository
 
         }
 
-        $full_path1 = $full_size_dir . $sessionImage->filename;
-        $full_path2 = $icon_size_dir . $sessionImage->filename;
+        $full_path1 = $full_size_dir . $sessionImage->filename . '.jpg';
+        $full_path2 = $icon_size_dir . $sessionImage->filename . '.jpg';
+	    $full_path3 = $post_size_dir . $sessionImage->filename . '.jpg';
+	    $full_path4 = $grid_size_dir . $sessionImage->filename . '.jpg';
+	    $full_path5 = $blog_header_size_dir . $sessionImage->filename . '.jpg';
+	    $full_path6 = $catalog_size_dir . $sessionImage->filename . '.jpg';
+	    $full_path7 = $product_thumb_dir . $sessionImage->filename . '.jpg';
+	    $full_path8 = $thumb_size_dir . $sessionImage->filename . '.jpg';
 
-        if ( File::exists( $full_path1 ) )
-        {
-            File::delete( $full_path1 );
-        }
-
-        if ( File::exists( $full_path2 ) )
-        {
-            File::delete( $full_path2 );
-        }
+	    if ( File::exists( $full_path1 ) ) {File::delete( $full_path1 ); }
+	    if ( File::exists( $full_path2 ) ) {File::delete( $full_path2 ); }
+	    if ( File::exists( $full_path3 ) ) {File::delete( $full_path3 ); }
+	    if ( File::exists( $full_path4 ) ) {File::delete( $full_path4 ); }
+	    if ( File::exists( $full_path5 ) ) {File::delete( $full_path5 ); }
+	    if ( File::exists( $full_path6 ) ) {File::delete( $full_path6 ); }
+	    if ( File::exists( $full_path7 ) ) {File::delete( $full_path7 ); }
+	    if ( File::exists( $full_path8 ) ) {File::delete( $full_path8 ); }
 
         if( !empty($sessionImage))
         {
