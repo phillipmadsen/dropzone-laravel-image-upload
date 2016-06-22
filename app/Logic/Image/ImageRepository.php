@@ -109,7 +109,9 @@ class ImageRepository
         return $image;
     }
 
-
+    /**
+     * Create Catalog image From Original  //'width'  => 440, 'height' => 586
+     */
 	public function catalog( $photo, $filename )
 	{
 		$manager = new ImageManager();
@@ -121,8 +123,11 @@ class ImageRepository
 	}
 
 
-	//'width'  => 270, 'height' => 360
+	
 
+    /**
+     * Create Grid image From Original  //'width'  => 270, 'height' => 360
+     */
 	public function grid( $photo, $filename )
 	{
 		$manager = new ImageManager();
@@ -145,7 +150,10 @@ class ImageRepository
 
 		return $image;
 	}
-              //  100 x 75 pixels
+    
+      /**
+     * Create Product Thumb image From Original  //  100 x 75 pixels
+     */ 
 	public function productthumb( $photo, $filename )
 	{
 		$manager = new ImageManager();
@@ -156,6 +164,9 @@ class ImageRepository
 		return $image;
 	}
 
+    /**
+     * Create Thumb image From Original  //'width'  => 64, 'height' => 64
+     */
 	public function thumb( $photo, $filename )
 	{
 		$manager = new ImageManager();
@@ -194,11 +205,7 @@ class ImageRepository
 	    $product_thumb_dir = Config::get('images.product_thumb');
 	    $thumb_size_dir = Config::get('images.thumb_size');
 
-
-
-
 	    $sessionImg = Img::where('original_name', 'like', $originalFilename)->first();
-
 
         if(empty($sessionImg))
         {

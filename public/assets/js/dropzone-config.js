@@ -4,6 +4,7 @@ Dropzone.options.realDropzone = {
     uploadMultiple: false,
     parallelUploads: 100,
     maxFilesize: 8,
+    clickable:true,
     previewsContainer: '#dropzonePreview',
     previewTemplate: document.querySelector('#preview-template').innerHTML,
     addRemoveLinks: true,
@@ -18,7 +19,7 @@ Dropzone.options.realDropzone = {
             $.ajax({
                 type: 'POST',
                 url: 'upload/delete',
-                data: {id: file.name, _token: $('#csrf-token').val()},
+                data: {id: file.name},
                 dataType: 'html',
                 success: function(data){
                     var rep = JSON.parse(data);
